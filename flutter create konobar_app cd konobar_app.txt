@@ -1,0 +1,127 @@
+flutter run
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(KonobarApp());
+}
+
+class KonobarApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Aplikacija za Konobare',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: StoloviScreen(),
+    );
+  }
+}
+
+class StoloviScreen extends StatefulWidget {
+  @override
+  _StoloviScreenState createState() => _StoloviScreenState();
+}
+
+class _StoloviScreenState extends State<StoloviScreen> {
+  int? aktivanSto;
+  Map<int, Map<String, int>> narudzbe = {};
+  List<String> meni = ["Kafa", "Pivo", "Sok"];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Stolovi")),
+      body: Column(
+        children: [
+          Wrap(
+            children: List.generate(5, (i) {
+              int sto = i + 1;
+              return Padding(
+                padding: EdgeInsets.all(4),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: aktivanSto == sto ? Colors.blue : Colors.grey,
+                  ),
+                  onPressed: () {
+                    setState(() { aktivanSto = sto; });
+                  },
+                  child: Text("Sto $sto"),
+                ),
+              );
+            }),
+          ),
+          aktivanSto == null
+              ? Text("Odaberi sto")
+              : Expanded(
+                  child: ListView(
+                    children: meni.map((artikal) {
+                      int kolicina = narudzbe[aktivanSto]?[artikal] ?? 0;
+                      return ListTile(
+                        title: Text(artikal),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text("$kolicina"),
+                            IconButton(
+                              icon: Icon(Icons.add),
+                              onPressed: () {
+                                setState(() {
+                                  narudzbe[aktivanSto] ??= {};
+                                  narudzbe[aktivanSto]![artikal] =
+                                      (narudzbe[aktivanSto]![artikal] ?? 0) + 1;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+          aktivanSto != null
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      child: Text("Pošalji narudžbu"),
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Narudžba poslata za sto $aktivanSto")),
+                        );
+                      },
+                    ),
+                    SizedBox(width: 20),
+                    ElevatedButton(
+                      child: Text("Račun"),
+                      onPressed: () {
+                        Map<String, int> racun = narudzbe[aktivanSto] ?? {};
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: Text("Račun za sto $aktivanSto"),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: racun.entries.map((e) => Text("${e.key}: ${e.value}")).toList(),
+                              ),
+                              actions: [
+                                TextButton(
+                                  child: Text("OK"),
+                                  onPressed: () => Navigator.pop(context),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                )
+              : SizedBox(),
+        ],
+      ),
+    );
+  }
+}flutter runApp
+
